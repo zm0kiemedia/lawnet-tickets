@@ -155,8 +155,7 @@ MIT License - siehe LICENSE Datei
 LawNet Development Team
 
 ---
-
-**Dashboard URL:** `https://ticket.zm0kie.de`  
+ 
 **Bot Prefix:** Slash Commands (`/`)
 
 Monitor:
