@@ -14,3 +14,4 @@ check_table.ts
 debug_db.ts
 migrate_*.ts
 logs/
+sessions.db
