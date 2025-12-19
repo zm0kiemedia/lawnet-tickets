@@ -15,7 +15,32 @@ import { initSocket } from '../utils/websocket';
 const app = express();
 const server = createServer(app);
 const PORT = 3001;
-const ADMIN_IDS = ['378917450517053440']; // zm0kie
+
+// Support multiple admin roles
+const ADMIN_ROLE_IDS = process.env.ADMIN_ROLE_ID
+    ? process.env.ADMIN_ROLE_ID.split(',').map(id => id.trim())
+    : ['1451058143244189769', '1451056774789468244'];
+
+/**
+ * Check if a user has admin privileges based on Discord roles
+ * @param userId Discord user ID
+ * @returns Promise<boolean> Whether the user is an admin
+ */
+async function isAdmin(userId: string): Promise<boolean> {
+    try {
+        const guild = client.guilds.cache.first();
+        if (!guild) return false;
+
+        const member = await guild.members.fetch(userId);
+        if (!member) return false;
+
+        // Check if user has any of the admin roles
+        return ADMIN_ROLE_IDS.some(roleId => member.roles.cache.has(roleId));
+    } catch (error) {
+        console.error('Error checking admin status:', error);
+        return false;
+    }
+}
 
 // Initialize Socket.IO
 initSocket(server);
@@ -82,10 +107,10 @@ app.get('/', (req, res) => {
 });
 
 app.get('/dashboard', checkAuth, async (req: any, res) => {
-    const isAdmin = ADMIN_IDS.includes(req.user.id);
+    const isAdminUser = await isAdmin(req.user.id);
     let tickets: any[];
 
-    if (isAdmin) {
+    if (isAdminUser) {
         // Admins see all tickets
         tickets = db.prepare("SELECT * FROM tickets ORDER BY created_at DESC").all();
     } else {
@@ -113,16 +138,16 @@ app.get('/dashboard', checkAuth, async (req: any, res) => {
         return { ...ticket, user_name: userName, assignee_name: assigneeName };
     }));
 
-    console.log(`[Dashboard] User: ${req.user.id}, Admin: ${isAdmin}, Tickets: ${tickets.length}`);
-    res.render('dashboard', { user: req.user, tickets, isAdmin });
+    console.log(`[Dashboard] User: ${req.user.id}, Admin: ${isAdminUser}, Tickets: ${tickets.length}`);
+    res.render('dashboard', { user: req.user, tickets, isAdmin: isAdminUser });
 });
 
 // API Endpoint for Polling
 app.get('/api/tickets', checkAuth, async (req: any, res) => {
-    const isAdmin = ADMIN_IDS.includes(req.user.id);
+    const isAdminUser = await isAdmin(req.user.id);
     let tickets: any[];
 
-    if (isAdmin) {
+    if (isAdminUser) {
         tickets = db.prepare("SELECT * FROM tickets ORDER BY created_at DESC").all();
     } else {
         tickets = db.prepare("SELECT * FROM tickets WHERE user_id = ? ORDER BY created_at DESC").all(req.user.id);
@@ -151,15 +176,15 @@ app.get('/api/tickets', checkAuth, async (req: any, res) => {
     res.json({ tickets: ticketsWithNames });
 });
 
-app.get('/tickets/:id', checkAuth, (req: any, res) => {
-    const isAdmin = ADMIN_IDS.includes(req.user.id);
+app.get('/tickets/:id', checkAuth, async (req: any, res) => {
+    const isAdminUser = await isAdmin(req.user.id);
     const transcript = db.prepare("SELECT * FROM transcripts WHERE ticket_id = ?").get(req.params.id) as any;
     const ticket = db.prepare("SELECT * FROM tickets WHERE id = ?").get(req.params.id) as any;
 
     if (!transcript) return res.status(404).send('Transcript not found');
 
     // Auth Check: User must be owner OR admin
-    if (ticket.user_id !== req.user.id && !isAdmin) {
+    if (ticket.user_id !== req.user.id && !isAdminUser) {
         return res.status(403).send('Unauthorized');
     }
 
@@ -223,8 +248,8 @@ app.get('/tickets/:id', checkAuth, (req: any, res) => {
 });
 
 app.get('/admin', checkAuth, async (req: any, res) => {
-    const isAdmin = ADMIN_IDS.includes(req.user.id);
-    if (!isAdmin) return res.redirect('/dashboard');
+    const isAdminUser = await isAdmin(req.user.id);
+    if (!isAdminUser) return res.redirect('/dashboard');
 
     const totalTickets = db.prepare('SELECT COUNT(*) as count FROM tickets').get() as any;
     const openTickets = db.prepare("SELECT COUNT(*) as count FROM tickets WHERE status = 'open'").get() as any;
@@ -299,13 +324,13 @@ app.get('/admin', checkAuth, async (req: any, res) => {
         users: guildMembers,
         tickets: ticketsWithUsers,
         settings,
-        isAdmin
+        isAdmin: isAdminUser
     });
 });
 
 app.delete('/api/tickets/:id', checkAuth, async (req: any, res) => {
-    const isAdmin = ADMIN_IDS.includes(req.user.id);
-    if (!isAdmin) return res.status(403).json({ error: 'Nur Administratoren dürfen Tickets löschen.' });
+    const isAdminUser = await isAdmin(req.user.id);
+    if (!isAdminUser) return res.status(403).json({ error: 'Nur Administratoren dürfen Tickets löschen.' });
 
     try {
         const ticket = db.prepare('SELECT channel_id FROM tickets WHERE id = ?').get(req.params.id) as any;
@@ -326,9 +351,9 @@ app.delete('/api/tickets/:id', checkAuth, async (req: any, res) => {
     }
 });
 
-app.post('/api/bot/settings', checkAuth, (req: any, res) => {
-    const isAdmin = ADMIN_IDS.includes(req.user.id);
-    if (!isAdmin) return res.status(403).json({ error: 'Nur Administratoren dürfen Einstellungen ändern.' });
+app.post('/api/bot/settings', checkAuth, async (req: any, res) => {
+    const isAdminUser = await isAdmin(req.user.id);
+    if (!isAdminUser) return res.status(403).json({ error: 'Nur Administratoren dürfen Einstellungen ändern.' });
 
     const { key, value } = req.body;
     db.prepare('INSERT OR REPLACE INTO bot_settings (key, value) VALUES (?, ?)').run(key, value);
@@ -341,8 +366,8 @@ app.post('/api/bot/settings', checkAuth, (req: any, res) => {
 });
 
 app.post('/api/tickets/:id/reopen', checkAuth, async (req: any, res) => {
-    const isAdmin = ADMIN_IDS.includes(req.user.id);
-    if (!isAdmin) return res.status(403).json({ error: 'Nur Administratoren können Tickets erneut öffnen.' });
+    const isAdminUser = await isAdmin(req.user.id);
+    if (!isAdminUser) return res.status(403).json({ error: 'Nur Administratoren können Tickets erneut öffnen.' });
 
     try {
         const threadId = await reopenTicket(client, req.params.id, req.user);
@@ -354,8 +379,8 @@ app.post('/api/tickets/:id/reopen', checkAuth, async (req: any, res) => {
 });
 
 app.post('/api/tickets/:id/close', checkAuth, async (req: any, res) => {
-    const isAdmin = ADMIN_IDS.includes(req.user.id);
-    if (!isAdmin) return res.status(403).json({ error: 'Nur Administratoren können Tickets schließen.' });
+    const isAdminUser = await isAdmin(req.user.id);
+    if (!isAdminUser) return res.status(403).json({ error: 'Nur Administratoren können Tickets schließen.' });
 
     try {
         const ticket = db.prepare('SELECT * FROM tickets WHERE id = ?').get(req.params.id) as any;
@@ -384,11 +409,11 @@ app.post('/api/tickets/:id/close', checkAuth, async (req: any, res) => {
 
 // Assign ticket to supporter
 app.post('/api/tickets/:id/assign', checkAuth, async (req: any, res) => {
-    const isAdmin = ADMIN_IDS.includes(req.user.id);
+    const isAdminUser = await isAdmin(req.user.id);
     const { supporterId, supporterName } = req.body;
 
     // Supporters can only assign to themselves, admins can assign to anyone
-    if (!isAdmin && supporterId && supporterId !== req.user.id) {
+    if (!isAdminUser && supporterId && supporterId !== req.user.id) {
         return res.status(403).json({ error: 'Du kannst Tickets nur dir selbst zuweisen.' });
     }
 
@@ -455,8 +480,8 @@ app.post('/api/tickets/:id/assign', checkAuth, async (req: any, res) => {
 
 // Rename thread
 app.post('/api/tickets/:id/rename', checkAuth, async (req: any, res) => {
-    const isAdmin = ADMIN_IDS.includes(req.user.id);
-    if (!isAdmin) return res.status(403).json({ error: 'Nur Administratoren können Threads umbenennen.' });
+    const isAdminUser = await isAdmin(req.user.id);
+    if (!isAdminUser) return res.status(403).json({ error: 'Nur Administratoren können Threads umbenennen.' });
 
     const { newName } = req.body;
     if (!newName || newName.trim().length === 0) {
@@ -514,8 +539,8 @@ app.get('/api/tickets/:id/transcript', checkAuth, async (req: any, res) => {
 
 // Update tags
 app.post('/api/tickets/:id/tags', checkAuth, async (req: any, res) => {
-    const isAdmin = ADMIN_IDS.includes(req.user.id);
-    if (!isAdmin) return res.status(403).json({ error: 'Nur Administratoren können Tags bearbeiten.' });
+    const isAdminUser = await isAdmin(req.user.id);
+    if (!isAdminUser) return res.status(403).json({ error: 'Nur Administratoren können Tags bearbeiten.' });
 
     const { tags } = req.body;
     if (!Array.isArray(tags)) {
@@ -533,8 +558,8 @@ app.post('/api/tickets/:id/tags', checkAuth, async (req: any, res) => {
 
 // Add supporter to ticket
 app.post('/api/tickets/:id/add-supporter', checkAuth, async (req: any, res) => {
-    const isAdmin = ADMIN_IDS.includes(req.user.id);
-    if (!isAdmin) return res.status(403).json({ error: 'Nur Administratoren können Supporter hinzufügen.' });
+    const isAdminUser = await isAdmin(req.user.id);
+    if (!isAdminUser) return res.status(403).json({ error: 'Nur Administratoren können Supporter hinzufügen.' });
 
     const { supporterId, supporterName } = req.body;
 
