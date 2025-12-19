@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LawNet Tickets | Login</title>
+    <link rel="icon" type="image/png" href="/img/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .glass-card {
+            background: rgba(11, 71, 90, 0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(254, 137, 0, 0.2);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-[#0b475a] text-white h-screen overflow-hidden relative selection:bg-[#fe8900]/30">
+
+    <!-- Ambient Background -->
+    <div class="absolute inset-0">
+        <div
+            class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#fe8900]/20 rounded-full blur-[120px] animate-pulse">
+        </div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#0b475a]/40 rounded-full blur-[120px] animate-pulse"
+            style="animation-delay: 2s"></div>
+    </div>
+
+    <div
+        class="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150 mix-blend-overlay">
+    </div>
+
+    <!-- Main Content -->
+    <div class="relative z-10 flex flex-col items-center justify-center h-full px-4" x-data="{ show: false }"
+        x-init="setTimeout(() => show = true, 100)">
+
+        <!-- Logo Section -->
+        <div class="text-center mb-10 transform transition-all duration-1000 ease-out"
+            :class="show ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'">
+
+            <div class="relative inline-block mb-8 animate-float">
+                <div class="absolute inset-0 bg-[#fe8900]/20 blur-2xl rounded-full"></div>
+                <!-- User requested rounded corners -->
+                <img src="/img/logo.png" alt="LawNet Logo"
+                    class="relative z-10 w-48 h-auto drop-shadow-2xl rounded-3xl">
+            </div>
+
+            <h1 class="text-5xl font-bold tracking-tight mb-3 text-white">
+                <span class="bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">LawNet
+                    Tickets</span>
+            </h1>
+            <p class="text-lg text-slate-400 font-light tracking-wide">
+                Exzellenz im Support-Management
+            </p>
+        </div>
+
+        <!-- Login Card -->
+        <div class="w-full max-w-sm transform transition-all duration-1000 delay-200 ease-out"
+            :class="show ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'">
+
+            <div class="glass-card rounded-2xl p-1">
+                <div class="bg-gray-900/50 rounded-xl p-8 border border-white/5">
+                    <div class="text-center mb-8">
+                        <h2 class="text-xl font-semibold text-white mb-1">Willkommen zurück</h2>
+                        <p class="text-sm text-slate-500">Bitte melde dich mit deinem Discord Account an.</p>
+                    </div>
+
+                    <a href="/auth/discord"
+                        class="group relative block w-full bg-[#5865F2] hover:bg-[#4752C4] text-white font-medium py-3.5 px-6 rounded-lg transition-all duration-300 shadow-lg shadow-[#5865F2]/20 hover:shadow-[#5865F2]/40 hover:-translate-y-0.5 overflow-hidden">
+                        <div class="relative z-10 flex items-center justify-center gap-3">
+                            <svg class="w-5 h-5 transition-transform group-hover:scale-110" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.772-.6083 1.1588a18.2915 18.2915 0 00-7.4858 0c-.1636-.3868-.4054-.7835-.6164-1.1588a.0741.0741 0 00-.0785-.0371 19.7913 19.7913 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561 20.03 20.03 0 005.9937 3.0337.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057 13.111 13.111 0 01-1.872-1.1588.0771.0771 0 01-.0071-.1293c.3604-.2655.72-.5474 1.059.845a.074.074 0 00.0771.0025c2.4044.826 4.966.826 6.8294 0a.074.074 0 00.0772-.0025c.3407-.2974.7003-.5795 1.0607-.845a.077.077 0 01-.007.1293 13.14 13.14 0 01-1.873 1.1588.076.076 0 00-.0407.1057c.3568.705.7723 1.346 1.226 1.9942a.076.076 0 00.0842.0276 20.039 20.039 0 005.9946-3.0336.0771.0771 0 00.0313-.056C24.329 13.5371 23.466 9.0458 20.317 4.3698zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.419-2.1568 2.419zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.419-2.1568 2.419z" />
+                            </svg>
+                            <span>Mit Discord fortfahren</span>
+                        </div>
+                    </a>
+
+                    <div class="mt-8 pt-6 border-t border-white/5 flex flex-col items-center gap-2">
+                        <p class="text-xs text-slate-500 uppercase tracking-widest font-semibold">Geschützt durch</p>
+                        <div class="flex items-center gap-2 text-slate-400">
+                            <img src="/img/favicon.png" class="w-4 h-4 opacity-50">
+                            <span class="text-sm">LawNet Security</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

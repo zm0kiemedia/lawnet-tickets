@@ -1,0 +1,16 @@
+node_modules/
+dist/
+*.log
+*.sqlite
+.env
+.DS_Store
+*.pem
+*.key
+package-lock.json
+audio/
+debug_*.html
+debug_*.log
+check_table.ts
+debug_db.ts
+migrate_*.ts
+logs/

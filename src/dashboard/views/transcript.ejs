@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket Transkript</title>
+    <link rel="icon" type="image/png" href="/img/favicon.png">
+    <!-- TailwindCSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Custom Scrollbar for the chat container */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(30, 41, 59, 0.5);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(71, 85, 105, 0.8);
+            border-radius: 3px;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.4);
+            /* Slate-800/40 */
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(51, 65, 85, 0.5);
+            /* Slate-700/50 */
+        }
+    </style>
+</head>
+
+<body class="bg-gray-900 text-gray-100 min-h-screen">
+
+    <!-- Sidebar -->
+    <%- include('partials/sidebar', { path: '/dashboard' , user: user }) %>
+
+        <!-- Main Content Wrapper -->
+        <div class="md:ml-64 flex flex-col min-h-screen transition-all duration-300">
+
+            <!-- Header -->
+            <header
+                class="h-20 flex items-center justify-between px-8 border-b border-slate-800/50 bg-gray-900/95 backdrop-blur sticky top-0 z-40">
+                <div>
+                    <h1 class="text-xl font-bold text-white flex items-center gap-2">
+                        <span class="text-amber-400">#</span> ticket-<%= id %>
+                    </h1>
+                    <p class="text-xs text-slate-400 font-medium mt-0.5">Archiviertes Transcript</p>
+                </div>
+
+                <a href="#" onclick="goBack(event)"
+                    class="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-all text-sm font-medium border border-slate-700">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Zurück
+                </a>
+                <script>
+                    function goBack(e) {
+                        e.preventDefault();
+                        const referrer = document.referrer;
+                        if (referrer && referrer.includes('/admin')) {
+                            window.location.href = '/admin';
+                        } else {
+                            window.location.href = '/dashboard';
+                        }
+                    }
+                </script>
+            </header>
+
+            <!-- Chat Area -->
+            <main class="flex-1 p-4 md:p-8 overflow-y-auto custom-scrollbar">
+
+                <div class="max-w-4xl mx-auto space-y-6">
+                    <!-- Welcome Card -->
+                    <div
+                        class="glass-panel rounded-2xl p-8 text-center animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        <div
+                            class="w-20 h-20 bg-amber-500/20 rounded-full flex items-center justify-center text-4xl mx-auto mb-6 shadow-[0_0_30px_-5px_rgba(99,102,241,0.3)] border border-amber-500/30">
+                            🎫
+                        </div>
+                        <h2 class="text-3xl font-bold text-white mb-2">Willkommen bei #ticket-<%= id %>
+                        </h2>
+                        <p class="text-slate-400 max-w-lg mx-auto">Dies ist der vollständige Verlauf deiner
+                            Support-Anfrage.
+                            Alle Nachrichten und Anhänge wurden unten archiviert.</p>
+                    </div>
+
+                    <!-- Metadata Section (New) -->
+                    <% if (ticket && (ticket.product || ticket.topic || ticket.issue_details)) { %>
+                        <div class="glass-panel rounded-2xl p-6 grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+                            <% if (ticket.product) { %>
+                                <div>
+                                    <p class="text-[10px] uppercase font-bold tracking-widest text-amber-400 mb-1">
+                                        Produkt / Bereich</p>
+                                    <p class="text-white font-semibold">
+                                        <%= ticket.product %>
+                                    </p>
+                                </div>
+                                <% } %>
+                                    <% if (ticket.topic) { %>
+                                        <div>
+                                            <p
+                                                class="text-[10px] uppercase font-bold tracking-widest text-amber-400 mb-1">
+                                                Betreff</p>
+                                            <p class="text-white font-semibold">
+                                                <%= ticket.topic %>
+                                            </p>
+                                        </div>
+                                        <% } %>
+                                            <% if (ticket.issue_details) { %>
+                                                <div class="md:col-span-2 border-t border-slate-800 pt-4">
+                                                    <p
+                                                        class="text-[10px] uppercase font-bold tracking-widest text-amber-400 mb-1">
+                                                        Problembeschreibung</p>
+                                                    <p
+                                                        class="text-slate-300 text-sm leading-relaxed whitespace-pre-line">
+                                                        <%= ticket.issue_details %>
+                                                    </p>
+                                                </div>
+                                                <% } %>
+                        </div>
+                        <% } %>
+
+                            <!-- Messages Container -->
+                            <div class="glass-panel rounded-2xl p-6 min-h-[500px] relative">
+
+                                <% if (messages && messages.length> 0) { %>
+                                    <div class="space-y-6">
+                                        <% messages.forEach(msg=> { %>
+                                            <div class="flex gap-4 group animate-in fade-in duration-500">
+                                                <!-- Avatar -->
+                                                <div class="flex-shrink-0">
+                                                    <img src="<%= msg.author.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png' %>"
+                                                        alt="<%= msg.author.username %>"
+                                                        class="w-10 h-10 rounded-full shadow-lg ring-2 ring-slate-700 group-hover:ring-amber-500/50 transition-all"
+                                                        onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+                                                </div>
+
+                                                <!-- Content -->
+                                                <div class="flex-1 min-w-0">
+                                                    <div class="flex items-baseline gap-2 mb-1">
+                                                        <span
+                                                            class="font-bold text-sm text-white group-hover:text-amber-300 transition-colors">
+                                                            <%= msg.author.username %>
+                                                        </span>
+                                                        <% if (msg.author.bot) { %>
+                                                            <span
+                                                                class="bg-[#5865F2] text-white text-[10px] px-1.5 rounded-[3px] py-[0.5px] uppercase font-bold tracking-wide">
+                                                                BOT
+                                                            </span>
+                                                            <% } %>
+                                                                <span class="text-xs text-slate-500">
+                                                                    <%= new Date(msg.timestamp).toLocaleString() %>
+                                                                </span>
+                                                    </div>
+
+                                                    <!-- Text/Bubble / V2 Container -->
+                                                    <% if (msg.v2_html) { %>
+                                                        <%- msg.v2_html %>
+                                                            <% } else if (msg.content) { %>
+                                                                <div
+                                                                    class="text-slate-300 leading-relaxed whitespace-pre-line break-words text-left text-[14px]">
+                                                                    <%= msg.content.trim() %>
+                                                                </div>
+                                                                <% } %>
+
+                                                                    <!-- Standard Embeds (Fix for missing notifications) -->
+                                                                    <% if (msg.embeds && msg.embeds.length> 0) { %>
+                                                                        <div class="mt-3 space-y-3">
+                                                                            <% msg.embeds.forEach(embed=> { %>
+                                                                                <div class="rounded-lg border-l-4 bg-slate-800/50 p-4 border-slate-700 shadow-sm"
+                                                                                    style="border-left-color: <%= embed.color ? '#' + embed.color.toString(16).padStart(6, '0') : '#2f3136' %>">
+                                                                                    <% if (embed.title) { %>
+                                                                                        <div
+                                                                                            class="font-bold text-white mb-2">
+                                                                                            <%= embed.title %>
+                                                                                        </div>
+                                                                                        <% } %>
+                                                                                            <% if (embed.description) {
+                                                                                                %>
+                                                                                                <div
+                                                                                                    class="text-sm text-slate-300 whitespace-pre-line leading-relaxed">
+                                                                                                    <%= embed.description
+                                                                                                        %>
+                                                                                                </div>
+                                                                                                <% } %>
+                                                                                                    <% if (embed.fields
+                                                                                                        &&
+                                                                                                        embed.fields.length>
+                                                                                                        0) { %>
+                                                                                                        <div
+                                                                                                            class="mt-3 grid gap-2">
+                                                                                                            <%
+                                                                                                                embed.fields.forEach(field=>
+                                                                                                                { %>
+                                                                                                                <div>
+                                                                                                                    <span
+                                                                                                                        class="font-semibold text-slate-200 text-xs uppercase tracking-wide">
+                                                                                                                        <%= field.name
+                                                                                                                            %>
+                                                                                                                    </span>
+                                                                                                                    <div
+                                                                                                                        class="text-sm text-slate-300 mt-0.5">
+                                                                                                                        <%= field.value
+                                                                                                                            %>
+                                                                                                                    </div>
+                                                                                                                </div>
+                                                                                                                <% }) %>
+                                                                                                        </div>
+                                                                                                        <% } %>
+                                                                                                            <% if
+                                                                                                                (embed.footer
+                                                                                                                &&
+                                                                                                                embed.footer.text)
+                                                                                                                { %>
+                                                                                                                <div
+                                                                                                                    class="mt-2 text-xs text-slate-500 font-medium border-t border-slate-700/50 pt-2">
+                                                                                                                    <%= embed.footer.text
+                                                                                                                        %>
+                                                                                                                </div>
+                                                                                                                <% } %>
+                                                                                </div>
+                                                                                <% }) %>
+                                                                        </div>
+                                                                        <% } %>
+
+                                                                            <!-- Attachments -->
+                                                                            <% if (msg.attachments &&
+                                                                                msg.attachments.length>
+                                                                                0) {
+                                                                                %>
+                                                                                <div class="mt-3 flex flex-wrap gap-3">
+                                                                                    <% msg.attachments.forEach(att=>
+                                                                                        { %>
+                                                                                        <% if (att.contentType &&
+                                                                                            att.contentType.startsWith('image/'))
+                                                                                            { %>
+                                                                                            <a href="<%= att.local_url || att.url %>"
+                                                                                                target="_blank"
+                                                                                                class="block max-w-sm overflow-hidden rounded-lg border border-slate-700 shadow-sm hover:border-amber-500/50 transition-colors group/img">
+                                                                                                <img src="<%= att.local_url || att.url %>"
+                                                                                                    alt="<%= att.name %>"
+                                                                                                    class="max-w-full h-auto max-h-60 object-cover group-hover/img:scale-105 transition-transform duration-300">
+                                                                                            </a>
+                                                                                            <% } else { %>
+                                                                                                <div class="flex items-center gap-3 bg-slate-800 p-3 rounded-lg border border-slate-700 hover:border-amber-500/50 transition-colors max-w-md cursor-pointer group/file"
+                                                                                                    onclick="window.open('<%= att.local_url || att.url %>', '_blank')">
+                                                                                                    <div
+                                                                                                        class="p-2 bg-slate-700 rounded text-amber-400 group-hover/file:text-white transition-colors">
+                                                                                                        <svg class="w-6 h-6"
+                                                                                                            fill="none"
+                                                                                                            stroke="currentColor"
+                                                                                                            viewBox="0 0 24 24">
+                                                                                                            <path
+                                                                                                                stroke-linecap="round"
+                                                                                                                stroke-linejoin="round"
+                                                                                                                stroke-width="2"
+                                                                                                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                                                                                            </path>
+                                                                                                        </svg>
+                                                                                                    </div>
+                                                                                                    <div
+                                                                                                        class="flex flex-col overflow-hidden">
+                                                                                                        <span
+                                                                                                            class="text-sm font-medium text-slate-200 group-hover/file:text-amber-300 truncate">
+                                                                                                            <%= att.name
+                                                                                                                %>
+                                                                                                        </span>
+                                                                                                        <span
+                                                                                                            class="text-xs text-slate-500">Anhang</span>
+                                                                                                    </div>
+                                                                                                    <svg class="w-4 h-4 text-slate-600 ml-auto group-hover/file:text-white transition-colors"
+                                                                                                        fill="none"
+                                                                                                        stroke="currentColor"
+                                                                                                        viewBox="0 0 24 24">
+                                                                                                        <path
+                                                                                                            stroke-linecap="round"
+                                                                                                            stroke-linejoin="round"
+                                                                                                            stroke-width="2"
+                                                                                                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4">
+                                                                                                        </path>
+                                                                                                    </svg>
+                                                                                                </div>
+                                                                                                <% } %>
+                                                                                                    <% }) %>
+                                                                                </div>
+                                                                                <% } %>
+                                                </div>
+                                            </div>
+                                            <% }) %>
+                                    </div>
+                                    <% } else { %>
+                                        <!-- Legacy Content Fallback (Styled) -->
+                                        <div
+                                            class="flex flex-col items-center justify-center h-full py-12 text-slate-500">
+                                            <svg class="w-16 h-16 mb-4 text-slate-600" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                                                </path>
+                                            </svg>
+                                            <h3 class="text-lg font-medium text-slate-300 mb-2">Altes
+                                                Transcript-Format
+                                            </h3>
+                                            <p class="mb-6 max-w-md text-center">Dieses Ticket wurde
+                                                archiviert, bevor
+                                                das verbesserte System aktiv war. Der Inhalt wird im
+                                                Rohformat
+                                                angezeigt.
+                                            </p>
+
+                                            <div
+                                                class="w-full bg-black/30 rounded-lg p-6 font-mono text-sm text-slate-300 overflow-x-auto border border-slate-700">
+                                                <%- legacyContent || 'No content available.' %>
+                                            </div>
+                                        </div>
+                                        <% } %>
+                            </div>
+
+                            <div class="text-center py-6">
+                                <p class="text-xs text-slate-600">Erstellt von LawNet Tickets • <span
+                                        class="text-slate-500">
+                                        <%= new Date().getFullYear() %>
+                                    </span></p>
+                            </div>
+                </div>
+            </main>
+        </div>
+
+</body>
+
+</html>
