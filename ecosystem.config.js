@@ -2,7 +2,7 @@ module.exports = {
     apps: [{
         name: 'LAWNET-Tickets',
         script: './dist/index.js',
-        cwd: '/var/www/lawnet-tickets',
+        cwd: '/var/www/LAWNET_Project/lawnet-tickets',
         instances: 1,
         autorestart: true,
         watch: false,

@@ -14,7 +14,7 @@ import { initSocket } from '../utils/websocket';
 
 const app = express();
 const server = createServer(app);
-const PORT = 3001;
+const PORT = process.env.PORT || 3003;
 
 // Support multiple admin roles
 const ADMIN_ROLE_IDS = process.env.ADMIN_ROLE_ID
