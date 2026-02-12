@@ -15,3 +15,4 @@ debug_db.ts
 migrate_*.ts
 logs/
 sessions.db
+tickets.db
